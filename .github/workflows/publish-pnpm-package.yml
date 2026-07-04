@@ -1,0 +1,29 @@
+name: Publish PNPM Package
+
+on:
+  push:
+    tags: "v*.*.*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: |
+          pnpm install --frozen-lockfile
+          pnpm publish --no-git-checks
