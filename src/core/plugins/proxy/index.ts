@@ -6,8 +6,8 @@ import { formatMetadata, type Metadata } from "@/shared/metadata"
 type ProxyTargets = string[] | ((name: string) => boolean)
 
 type OutputFile = {
-	hash: string,
-	text: string,
+	hash: string
+	text: string
 	path: string
 }
 
@@ -26,10 +26,7 @@ function resolveOutFile(targetPath: string, options: Options) {
 	return options.outFile(targetPath)
 }
 
-function createProxyScript(
-	targetPath: string,
-	options: Options,
-) {
+function createProxyScript(targetPath: string, options: Options) {
 	const metadata: Metadata = {
 		...options.metadata,
 		grant: ["GM.xmlHttpRequest", ...(options.metadata?.grant ?? [])],
@@ -80,16 +77,18 @@ export function userscriptProxy(options: Options = {}) {
 		name: "unplugin-plugin-userscript-proxy",
 		rolldown: {
 			generateBundle(_, b) {
-				for (const file of Object.keys(b).filter((k) => validateTarget(k, options.targets))) {
+				for (const file of Object.keys(b).filter((k) =>
+					validateTarget(k, options.targets),
+				)) {
 					const userscript = createProxyScript(file, options)
 					this.emitFile({
 						type: "prebuilt-chunk",
 						code: userscript.text,
 						name: userscript.path,
-						fileName: userscript.path
+						fileName: userscript.path,
 					})
 				}
-			}
-		}
+			},
+		},
 	})
 }

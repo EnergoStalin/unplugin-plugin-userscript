@@ -35,11 +35,7 @@ export namespace Metadata {
 		| (string & {})
 
 	export type CustomValue =
-		| string
-		| string[]
-		| undefined
-		| null
-		| Record<string, string>
+		string | string[] | undefined | null | Record<string, string>
 
 	export type InjectionType =
 		| "document-end"

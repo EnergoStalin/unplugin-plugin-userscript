@@ -1,5 +1,5 @@
-import { definePlugin } from "@/shared/definePlugin"
 import { source } from "common-tags"
+import { definePlugin } from "@/shared/definePlugin"
 
 export type Options = {
 	at: ("start" | "end")[]
@@ -38,12 +38,18 @@ export function userscriptInjectCode(options: Options) {
 		rolldown: {
 			outputOptions(o) {
 				if (at.includes("start")) {
-					o.postBanner = (chunk) => chunk.fileName.endsWith(".user.js") ? transform(options, "") : ""
+					o.postBanner = (chunk) =>
+						chunk.fileName.endsWith(".user.js")
+							? transform(options, "")
+							: ""
 				}
 				if (at.includes("end")) {
-					o.postFooter = (chunk) => chunk.fileName.endsWith(".user.js") ? transform(options, "") : ""
+					o.postFooter = (chunk) =>
+						chunk.fileName.endsWith(".user.js")
+							? transform(options, "")
+							: ""
 				}
-			}
-		}
+			},
+		},
 	})
 }
