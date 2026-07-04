@@ -27,11 +27,11 @@ build({
 As separate plugins:
 
 ```ts
-import { userscript } from "unplugin-plugin-userscript/rolldown"
+import { metadata } from "unplugin-plugin-userscript/rolldown"
 
 build({
   plugins: [
-    userscript.metadata({
+    metadata({
       // ...
     })
   ]
