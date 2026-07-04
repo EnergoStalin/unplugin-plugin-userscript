@@ -1,11 +1,15 @@
 import { source } from "common-tags"
-import type { OutputFile, PluginBuild } from "esbuild"
 import { createHash } from "node:crypto"
-import { relative } from "node:path"
 import { definePlugin } from "@/shared/definePlugin"
 import { formatMetadata, type Metadata } from "@/shared/metadata"
 
-type ProxyTargets = string[] | ((file: OutputFile) => boolean)
+type ProxyTargets = string[] | ((name: string) => boolean)
+
+type OutputFile = {
+	hash: string,
+	text: string,
+	path: string
+}
 
 export type Options = {
 	metadata?: Metadata
@@ -23,8 +27,7 @@ function resolveOutFile(targetPath: string, options: Options) {
 }
 
 function createProxyScript(
-	build: PluginBuild,
-	target: OutputFile,
+	targetPath: string,
 	options: Options,
 ) {
 	const metadata: Metadata = {
@@ -33,19 +36,13 @@ function createProxyScript(
 		connect: ["127.0.0.1", ...[options.metadata?.connect ?? []].flat()],
 	}
 
-	const filePath = resolveOutFile(target.path, options)
-	const proxyPath = relative(
-		build.initialOptions.outdir ?? "dist",
-		target.path,
-	)
-
 	const text = source`
 		${formatMetadata(metadata)}
 
 		(async function () {
 			GM.xmlHttpRequest({
 				method: "GET",
-				url: "http://127.0.0.1:${options.port ?? "8080"}/${proxyPath}",
+				url: "http://127.0.0.1:${options.port ?? "8080"}/${targetPath}",
 				onload: function(response) {
 					eval(response.responseText)
 				},
@@ -53,11 +50,8 @@ function createProxyScript(
 		})()
 	`
 
-	const encoder = new TextEncoder()
-
 	const proxyScriptFile: OutputFile = {
-		path: filePath,
-		contents: encoder.encode(text),
+		path: resolveOutFile(targetPath, options),
 		hash: createHash("md5").update(text).digest("hex"),
 		text,
 	}
@@ -65,16 +59,16 @@ function createProxyScript(
 	return proxyScriptFile
 }
 
-function validateTarget(file: OutputFile, targets?: ProxyTargets) {
+function validateTarget(path: string, targets?: ProxyTargets) {
 	if (!targets) {
 		return true
 	}
 
-	if (Array.isArray(targets) && !targets.includes(file.path)) {
+	if (Array.isArray(targets) && !targets.includes(path)) {
 		return false
 	}
 
-	if (!Array.isArray(targets) && !targets(file)) {
+	if (!Array.isArray(targets) && !targets(path)) {
 		return false
 	}
 
@@ -83,23 +77,19 @@ function validateTarget(file: OutputFile, targets?: ProxyTargets) {
 
 export function userscriptProxy(options: Options = {}) {
 	return definePlugin({
-		name: "esbuild-plugin-userscript-proxy",
-		setup(build) {
-			build.onEnd((result) => {
-				if (!result.outputFiles) {
-					return
+		name: "unplugin-plugin-userscript-proxy",
+		rolldown: {
+			generateBundle(_, b) {
+				for (const file of Object.keys(b).filter((k) => validateTarget(k, options.targets))) {
+					const userscript = createProxyScript(file, options)
+					this.emitFile({
+						type: "prebuilt-chunk",
+						code: userscript.text,
+						name: userscript.path,
+						fileName: userscript.path
+					})
 				}
-
-				for (const file of Array.from(result.outputFiles)) {
-					if (!validateTarget(file, options.targets)) {
-						continue
-					}
-
-					const proxyFile = createProxyScript(build, file, options)
-
-					result.outputFiles.push(proxyFile)
-				}
-			})
-		},
+			}
+		}
 	})
 }

@@ -1,4 +1,4 @@
-# esbuild-plugin-userscript
+# unplugin-plugin-userscript
 
 ESbuild plugin(s) for userscripts.
 
@@ -13,7 +13,7 @@ Available plugins:
 As a single plugin:
 
 ```ts
-import { userscript } from "esbuild-plugin-userscript"
+import { userscript } from "unplugin-plugin-userscript/rolldown"
 
 build({
   plugins: [
@@ -27,7 +27,7 @@ build({
 As separate plugins:
 
 ```ts
-import { userscript } from "esbuild-plugin-userscript"
+import { userscript } from "unplugin-plugin-userscript/rolldown"
 
 build({
   plugins: [

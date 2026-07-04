@@ -12,9 +12,8 @@
 		"moduleResolution": "Bundler",
 		"moduleDetection": "force",
 		"allowSyntheticDefaultImports": true,
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
+			"@/*": ["./src/core/*"],
 			"@root/*": ["./*"]
 		},
 
