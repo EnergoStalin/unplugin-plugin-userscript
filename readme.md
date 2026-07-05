@@ -1,7 +1,5 @@
 # unplugin-plugin-userscript
 
-ESbuild plugin(s) for userscripts.
-
 Available plugins:
 
 - `userscript-inject-code` - Injects code fragment into compiled userscript
